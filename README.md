@@ -30,7 +30,7 @@ sequenceDiagram
     participant M as 🔧 MCP Server
     participant D as 📊 Datenbank
     
-    U->>C: "Zeige alle Schüler aus Klasse 10a"
+    U->>C: "Zeige alle Schüler aus Klasse XY"
     C->>C: Analysiere Anfrage
     C->>M: Tool-Aufruf: query_database()
     Note over C,M: MCP Protokoll (JSON-RPC)
@@ -40,7 +40,7 @@ sequenceDiagram
     M->>M: Konvertiere zu JSON
     M->>C: JSON Antwort
     C->>C: Antwort in Chat-Nachricht umsetzen
-    C->>U: "Hier sind die Schüler aus 10a: ..."
+    C->>U: "Hier sind die Schüler aus XY: ..."
 ```
 
 
@@ -215,5 +215,6 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
 
