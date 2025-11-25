@@ -5,6 +5,21 @@ Ein Projekt zum Lernen, wie man eine SQLite-Datenbank mit einem LLM über einen 
 ## Was ist MCP?
 
 Das **Model Context Protocol (MCP)** ist ein offener Standard, der es Large Language Models (LLMs) ermöglicht, mit externen Datenquellen und Tools zu kommunizieren. In diesem Projekt nutzen wir MCP, um einem LLM Zugriff auf eine SQLite-Datenbank zu geben.
+## Übersicht: Wie funktioniert das System?
+
+```mermaid
+graph TB
+    User[👤 Benutzer] -->|Frage in natürlicher Sprache| Claude[🤖 Claude Desktop]
+    Claude -->|MCP Protokoll| Server[🔧 MCP Server<br/>FastMCP]
+    Server -->|SQL Query| DB[(📊 schule.db<br/>SQLite)]
+    DB -->|Ergebnis| Server
+    Server -->|JSON Daten| Claude
+    Claude -->|Antwort| User
+    
+    style Claude fill:#e8e8e8,stroke:#000,stroke-width:3px,color:#000
+    style Server fill:#c0c0c0,stroke:#000,stroke-width:3px,color:#000
+    style DB fill:#888,stroke:#000,stroke-width:3px,color:#fff
+```
 
 ## Kommunikationsfluss im Detail
 
@@ -24,9 +39,10 @@ sequenceDiagram
     D->>M: Ergebnis-Rows
     M->>M: Konvertiere zu JSON
     M->>C: JSON Antwort
-    C->>C: Formatiere Antwort
+    C->>C: Antwort in Chat-Nachricht umsetzen
     C->>U: "Hier sind die Schüler aus 10a: ..."
 ```
+
 
 ## Projektstruktur
 
@@ -199,4 +215,5 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
