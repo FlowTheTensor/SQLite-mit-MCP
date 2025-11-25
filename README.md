@@ -173,7 +173,7 @@ Das Script zeigt dir die Konfiguration an und speichert sie in `claude_desktop_c
 
 **Dann:**
 - Gehe in Claude Desktop unten Links auf dein Nutzersymbol (ggf. Fenster maximieren)
-- Dort Èinstellungen`
+- Dort `Einstellungen`
 - Unter `Entwickler` auf `Config bearbeiten`
 - Öffne die Datei `claude_desktop_config.json` mit einem Texteditor
 - Kopiere den Inhalt aus der generierten `claude_desktop_config.json` hinein
@@ -264,6 +264,7 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
 
 
