@@ -11,7 +11,7 @@ Das **Model Context Protocol (MCP)** ist ein offener Standard, der es Large Lang
 Der Anfrager (i.d.R. das Programm, in dem die KI (LLM) läuft) kann 
 - eine Übersicht der Werkzeuge eines MCP-Servers anfragen: Der Client fragt den/die Server ab, welche Tools sie zur Verfügung stellen. Die Protocol Message Method dazu ist [`tools/list`](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#listing-tools)
 
-- Werkzeuge verwenden: Danach kann der Client die Tools nutzen, indem er eine [`tools/call`](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#calling-tools) Methode.
+- Werkzeuge verwenden: Danach kann der Client die Tools nutzen, indem er eine [`tools/call`](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#calling-tools)-Methode verwendet.
 
 - (Änderungen auflisten lassen) [`tools/list_changed`](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#list-changed-notification)
 
@@ -264,6 +264,7 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
 
 
