@@ -35,7 +35,7 @@ sequenceDiagram
     C->>M: Tool-Aufruf: query_database()
     Note over C,M: MCP Protokoll (JSON-RPC)
     M->>M: Validiere Query (nur SELECT)
-    M->>D: SELECT * FROM schueler WHERE klasse='10a'
+    M->>D: SELECT * FROM schueler WHERE klasse='XY'
     D->>M: Ergebnis-Rows
     M->>M: Konvertiere zu JSON
     M->>C: JSON Antwort
@@ -215,6 +215,7 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
 
 
