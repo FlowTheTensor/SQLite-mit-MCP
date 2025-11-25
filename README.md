@@ -53,6 +53,9 @@ Hier das Beispiel Text nach [https://modelcontextprotocol.io/specification/2025-
 ```
 
 
+### Nun unser konkretes Datenbank-Beispiel
+
+
 ```mermaid
 graph TB
     User[👤 Benutzer] -->|Frage in natürlicher Sprache| Claude[🤖 Claude Desktop]
@@ -261,6 +264,7 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
 
 
