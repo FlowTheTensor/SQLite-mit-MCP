@@ -15,6 +15,42 @@ Der Anfrager (i.d.R. das Programm, in dem die KI (LLM) läuft) kann
 
 - (Änderungen auflisten lassen) [`tools/list_changed`](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#list-changed-notification)
 
+### MCP Protokoll-Ablauf (nach [https://modelcontextprotocol.io/specification/2025-03-26/server/tools#message-flow](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#message-flow))
+
+```mermaid
+sequenceDiagram
+    participant LLM as LLM
+    participant Client as Client
+    participant Server as Server
+    
+    Note over LLM,Server: Discovery
+    Client->>Server: tools/list
+    Server-->>Client: List of tools
+    
+    Note over LLM,Client: Tool Selection
+    LLM->>LLM: Select tool to use
+    
+    Note over Client,Server: Invocation
+    Client->>Server: tools/call
+    Server-->>Client: Tool result
+    LLM->>LLM: Process result
+    
+    Note over Client,Server: Updates
+    Server-->>Client: tools/list_changed
+    Client->>Server: tools/list
+    Server-->>Client: Updated tools
+```
+
+Antworten des Servers werden per JSON RPC als Tool Result übertragen.
+Das können Text, Audio, Bild oder Embedded sein.
+
+Hier das Beispiel Text nach [https://modelcontextprotocol.io/specification/2025-03-26/server/tools#text-content](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#text-content)
+```json
+{
+  "type": "text",
+  "text": "Tool result text"
+}
+```
 
 
 ```mermaid
@@ -225,6 +261,7 @@ Die Datenbank hat 4 Tabellen:
 5. Experimentiere mit Aggregationen (Durchschnitt, Anzahl, etc.)
 
 Viel Erfolg! 🚀
+
 
 
 
