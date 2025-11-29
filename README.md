@@ -17,28 +17,46 @@ Der Anfrager (i.d.R. das Programm, in dem die KI (LLM) läuft) kann
 
 ### MCP Protokoll-Ablauf (nach [https://modelcontextprotocol.io/specification/2025-03-26/server/tools#message-flow](https://modelcontextprotocol.io/specification/2025-03-26/server/tools#message-flow))
 
+#### Ablauf der Erkundung
 ```mermaid
 sequenceDiagram
-    participant LLM as LLM
-    participant Client as Client
+    
+    participant Client as Client (z.B. Claude)
     participant Server as Server
     
-    Note over LLM,Server: Discovery
+    Note over Client,Server: Erkundung
     Client->>Server: tools/list
-    Server-->>Client: List of tools
-    
-    Note over LLM,Client: Tool Selection
-    LLM->>LLM: Select tool to use
-    
-    Note over Client,Server: Invocation
-    Client->>Server: tools/call
-    Server-->>Client: Tool result
-    LLM->>LLM: Process result
+    Server-->>Client: Liste der tools
+   
     
     Note over Client,Server: Updates
     Server-->>Client: tools/list_changed
     Client->>Server: tools/list
     Server-->>Client: Updated tools
+```
+
+#### Ablauf eines Aufrufs
+
+```mermaid
+sequenceDiagram
+participant User as Benutzer
+participant LLM as LLM
+    participant Client as Client (z.B. Claude)
+    participant Server as Server
+    participant App as Programm (z.B. Datenbank)
+
+   User->>LLM: Anfrage in <br>natürlicher Sprache
+   LLM->>LLM: wählt tool anhand Kommentar aus
+   LLM->>Client: tool Name??
+    Note over Client,Server: Aufruf per stdio
+    Client->>Server: tools/call
+    Note over Server,App: Aufruf per REST API
+    Server->>App: HTTP GET
+    App-->>Server: HTTP RESPONSE
+    Server-->>Client: Tool result als JSON RPC
+    Client-->>LLM: ??
+    LLM-->>User: für Menschen <br>aufbereitetes Ergebnis
+   
 ```
 
 Antworten des Servers werden per JSON RPC als Tool Result übertragen.
@@ -267,6 +285,7 @@ Die Datenbank hat 4 Tabellen:
 
 
 Viel Erfolg! 🚀
+
 
 
 
