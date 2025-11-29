@@ -40,10 +40,10 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
 participant User as Benutzer
-participant LLM as LLM
-    participant Client as Client (z.B. Claude)
+participant LLM as LLM <br>(z.B. Sonnet 4.5)
+    participant Client as Client<br> (z.B. Claude Desktop)
     participant Server as Server
-    participant App as Programm (z.B. Datenbank)
+    participant App as Programm <br>(z.B. Datenbank)
 
    User->>LLM: Anfrage in <br>natürlicher Sprache
    LLM->>LLM: wählt tool anhand Kommentar aus
