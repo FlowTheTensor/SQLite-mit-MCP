@@ -1,16 +1,75 @@
 #!/usr/bin/env python3
 """
-Initialisiert die Schul-Datenbank mit Beispieldaten
+Initialisiert die Schul-Datenbank mit realistischen Beispieldaten
+- Klassen 5-10 mit je ca. 17 Schülern (insgesamt ~100)
+- Fächer: Deutsch, Englisch, Mathematik, Informatik, Sport
+- Lehrer unterrichten 2 Fächer und maximal 4 Klassen
+- Pro Fach: 2 Schulaufgaben + 3 mündliche Noten
 """
 
 import sqlite3
+import random
 from pathlib import Path
+from datetime import datetime, timedelta
 
 # Pfad zur Datenbank
 DB_PATH = Path(__file__).parent / "schule.db"
 
+# Konstanten
+KLASSEN = ['5a', '5b', '6a', '6b', '7a', '7b', '8a', '8b', '9a', '9b', '10a', '10b']
+FAECHER = ['Deutsch', 'Englisch', 'Mathematik', 'Informatik', 'Sport']
+SCHUELER_PRO_KLASSE = 17
+
+# Vornamen für Schüler
+VORNAMEN_M = ['Max', 'Leon', 'Paul', 'Felix', 'Jonas', 'Lukas', 'Tim', 'Noah', 'Ben', 'Tom',
+              'Finn', 'Luca', 'David', 'Julian', 'Elias', 'Moritz', 'Jan', 'Nico', 'Simon']
+VORNAMEN_W = ['Anna', 'Lisa', 'Emma', 'Mia', 'Sarah', 'Laura', 'Sophie', 'Lena', 'Julia', 'Hannah',
+              'Lea', 'Marie', 'Emily', 'Paula', 'Lara', 'Nina', 'Clara', 'Amelie', 'Sophia']
+NACHNAMEN = ['Müller', 'Schmidt', 'Schneider', 'Fischer', 'Weber', 'Meyer', 'Wagner', 'Becker',
+             'Schulz', 'Hoffmann', 'Koch', 'Bauer', 'Richter', 'Klein', 'Wolf', 'Schröder',
+             'Neumann', 'Schwarz', 'Zimmermann', 'Braun', 'Krüger', 'Hofmann', 'Hartmann',
+             'Lange', 'Schmitt', 'Werner', 'Schmitz', 'Krause', 'Meier', 'Lehmann']
+
+# Lehrer-Daten (Vorname, Nachname, Fach1, Fach2)
+LEHRER_DATEN = [
+    ('Petra', 'Müller', 'Mathematik', 'Informatik'),
+    ('Thomas', 'Klein', 'Mathematik', 'Sport'),
+    ('Sandra', 'Wolf', 'Deutsch', 'Englisch'),
+    ('Michael', 'Schneider', 'Englisch', 'Sport'),
+    ('Julia', 'Zimmermann', 'Deutsch', 'Informatik'),
+    ('Robert', 'Wagner', 'Mathematik', 'Deutsch'),
+    ('Sabine', 'Becker', 'Englisch', 'Deutsch'),
+    ('Andreas', 'Hoffmann', 'Sport', 'Informatik'),
+    ('Claudia', 'Fischer', 'Mathematik', 'Englisch'),
+    ('Martin', 'Schulz', 'Informatik', 'Deutsch')
+]
+
+def generiere_geburtsdatum(klasse):
+    """Generiert ein passendes Geburtsdatum basierend auf der Klassenstufe"""
+    # Extrahiere die Klassenstufe (erste Zeichen bis zum Buchstaben)
+    stufe = klasse.rstrip('ab')
+    jahr_basis = {'5': 2014, '6': 2013, '7': 2012, '8': 2011, '9': 2010, '10': 2009}
+    jahr = jahr_basis.get(stufe, 2010)  # Fallback auf 2010
+    monat = random.randint(1, 12)
+    tag = random.randint(1, 28)
+    return f"{jahr}-{monat:02d}-{tag:02d}"
+
+def generiere_note():
+    """Generiert eine realistische Note (1.0 - 6.0)"""
+    # Gewichtete Verteilung: mehr mittlere Noten
+    noten_pool = [1.0, 1.3, 1.7, 2.0, 2.3, 2.7, 3.0, 3.3, 3.7, 4.0, 4.3, 4.7, 5.0, 5.3, 5.7, 6.0]
+    gewichte = [2, 4, 6, 10, 12, 10, 12, 8, 8, 6, 4, 3, 2, 1, 1, 1]
+    return random.choices(noten_pool, weights=gewichte)[0]
+
+def generiere_datum(offset_tage_min, offset_tage_max):
+    """Generiert ein Datum im aktuellen Schuljahr"""
+    heute = datetime.now()
+    offset = random.randint(offset_tage_min, offset_tage_max)
+    datum = heute - timedelta(days=offset)
+    return datum.strftime('%Y-%m-%d')
+
 def create_database():
-    """Erstellt die Datenbank mit allen Tabellen und Beispieldaten"""
+    """Erstellt die Datenbank mit allen Tabellen und realistischen Beispieldaten"""
     
     # Wenn Datenbank existiert, löschen
     if DB_PATH.exists():
@@ -35,26 +94,25 @@ def create_database():
         )
     """)
     
-    # Tabelle: Lehrer
+    # Tabelle: Lehrer (mit fach1 und fach2)
     cursor.execute("""
         CREATE TABLE lehrer (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             vorname TEXT NOT NULL,
             nachname TEXT NOT NULL,
-            fach TEXT NOT NULL,
+            fach1 TEXT NOT NULL,
+            fach2 TEXT NOT NULL,
             raum TEXT
         )
     """)
     
-    # Tabelle: Kurse
+    # Tabelle: Kurse (Fach + Klasse + Lehrer)
     cursor.execute("""
         CREATE TABLE kurse (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            kursname TEXT NOT NULL,
+            fach TEXT NOT NULL,
+            klasse TEXT NOT NULL,
             lehrer_id INTEGER,
-            raum TEXT,
-            wochentag TEXT,
-            uhrzeit TEXT,
             FOREIGN KEY (lehrer_id) REFERENCES lehrer(id)
         )
     """)
@@ -73,88 +131,117 @@ def create_database():
         )
     """)
     
-    print("Füge Beispieldaten ein...")
+    print("Generiere Schüler...")
     
-    # Beispieldaten: Schüler
-    schueler_data = [
-        ('Max', 'Mustermann', '10a', '2009-03-15', 'max.mustermann@schule.de'),
-        ('Anna', 'Schmidt', '10a', '2009-07-22', 'anna.schmidt@schule.de'),
-        ('Tom', 'Weber', '10b', '2009-01-10', 'tom.weber@schule.de'),
-        ('Lisa', 'Meyer', '10a', '2009-05-30', 'lisa.meyer@schule.de'),
-        ('Paul', 'Fischer', '10b', '2009-11-08', 'paul.fischer@schule.de'),
-        ('Sarah', 'Becker', '11a', '2008-04-17', 'sarah.becker@schule.de'),
-        ('Leon', 'Schulz', '11a', '2008-09-25', 'leon.schulz@schule.de'),
-        ('Emma', 'Wagner', '11b', '2008-02-14', 'emma.wagner@schule.de'),
-        ('Jonas', 'Hoffmann', '11b', '2008-12-03', 'jonas.hoffmann@schule.de'),
-        ('Mia', 'Koch', '12a', '2007-06-20', 'mia.koch@schule.de')
-    ]
+    # Schüler generieren
+    schueler_data = []
+    verwendete_namen = set()
+    
+    for klasse in KLASSEN:
+        for i in range(SCHUELER_PRO_KLASSE):
+            # Geschlecht zufällig wählen
+            ist_maennlich = random.random() < 0.5
+            vorname = random.choice(VORNAMEN_M if ist_maennlich else VORNAMEN_W)
+            nachname = random.choice(NACHNAMEN)
+            
+            # Sicherstellen, dass der Name einzigartig ist
+            name_key = f"{vorname}_{nachname}_{klasse}"
+            counter = 1
+            while name_key in verwendete_namen:
+                nachname = random.choice(NACHNAMEN)
+                name_key = f"{vorname}_{nachname}_{klasse}"
+                counter += 1
+                if counter > 10:  # Fallback
+                    nachname = f"{nachname}{random.randint(1, 99)}"
+                    name_key = f"{vorname}_{nachname}_{klasse}"
+                    break
+            
+            verwendete_namen.add(name_key)
+            
+            geburtsdatum = generiere_geburtsdatum(klasse)
+            email = f"{vorname.lower()}.{nachname.lower()}@schule.de"
+            
+            schueler_data.append((vorname, nachname, klasse, geburtsdatum, email))
+    
     cursor.executemany(
         "INSERT INTO schueler (vorname, nachname, klasse, geburtsdatum, email) VALUES (?, ?, ?, ?, ?)",
         schueler_data
     )
     
-    # Beispieldaten: Lehrer
-    lehrer_data = [
-        ('Petra', 'Müller', 'Mathematik', 'A101'),
-        ('Thomas', 'Klein', 'Informatik', 'B205'),
-        ('Sandra', 'Wolf', 'Deutsch', 'A203'),
-        ('Michael', 'Schneider', 'Englisch', 'C102'),
-        ('Julia', 'Zimmermann', 'Physik', 'B110')
-    ]
+    print("Erstelle Lehrer...")
+    
+    # Lehrer einfügen
+    lehrer_data = []
+    for vorname, nachname, fach1, fach2 in LEHRER_DATEN:
+        raum = f"{random.choice(['A', 'B', 'C'])}{random.randint(101, 305)}"
+        lehrer_data.append((vorname, nachname, fach1, fach2, raum))
+    
     cursor.executemany(
-        "INSERT INTO lehrer (vorname, nachname, fach, raum) VALUES (?, ?, ?, ?)",
+        "INSERT INTO lehrer (vorname, nachname, fach1, fach2, raum) VALUES (?, ?, ?, ?, ?)",
         lehrer_data
     )
     
-    # Beispieldaten: Kurse
-    kurse_data = [
-        ('Mathematik Grundkurs', 1, 'A101', 'Montag', '08:00'),
-        ('Informatik Leistungskurs', 2, 'B205', 'Dienstag', '10:00'),
-        ('Deutsch Grundkurs', 3, 'A203', 'Mittwoch', '09:00'),
-        ('Englisch Grundkurs', 4, 'C102', 'Donnerstag', '11:00'),
-        ('Physik Leistungskurs', 5, 'B110', 'Freitag', '08:00')
-    ]
+    print("Erstelle Kurse...")
+    
+    # Kurse erstellen (jede Klasse hat alle Fächer)
+    # Jedem Lehrer max. 4 Klassen zuweisen
+    kurs_data = []
+    lehrer_klassen_count = {i: {fach: 0 for fach in FAECHER} for i in range(1, len(LEHRER_DATEN) + 1)}
+    
+    for klasse in KLASSEN:
+        for fach in FAECHER:
+            # Finde verfügbare Lehrer für dieses Fach
+            verfuegbare_lehrer = []
+            for idx, (_, _, fach1, fach2) in enumerate(LEHRER_DATEN, 1):
+                if (fach == fach1 or fach == fach2) and lehrer_klassen_count[idx][fach] < 4:
+                    verfuegbare_lehrer.append(idx)
+            
+            if verfuegbare_lehrer:
+                lehrer_id = random.choice(verfuegbare_lehrer)
+                lehrer_klassen_count[lehrer_id][fach] += 1
+                kurs_data.append((fach, klasse, lehrer_id))
+            else:
+                # Fallback: nehme irgendeinen passenden Lehrer
+                for idx, (_, _, fach1, fach2) in enumerate(LEHRER_DATEN, 1):
+                    if fach == fach1 or fach == fach2:
+                        kurs_data.append((fach, klasse, idx))
+                        break
+    
     cursor.executemany(
-        "INSERT INTO kurse (kursname, lehrer_id, raum, wochentag, uhrzeit) VALUES (?, ?, ?, ?, ?)",
-        kurse_data
+        "INSERT INTO kurse (fach, klasse, lehrer_id) VALUES (?, ?, ?)",
+        kurs_data
     )
     
-    # Beispieldaten: Noten
-    noten_data = [
-        # Max Mustermann
-        (1, 1, 2.3, '2025-10-15', 'Klausur'),
-        (1, 2, 1.7, '2025-10-20', 'Klausur'),
-        (1, 1, 2.0, '2025-11-05', 'mündlich'),
-        # Anna Schmidt
-        (2, 1, 1.3, '2025-10-15', 'Klausur'),
-        (2, 3, 2.0, '2025-10-18', 'Hausaufgabe'),
-        (2, 1, 1.7, '2025-11-05', 'mündlich'),
-        # Tom Weber
-        (3, 1, 3.0, '2025-10-15', 'Klausur'),
-        (3, 2, 2.3, '2025-10-20', 'Klausur'),
-        # Lisa Meyer
-        (4, 1, 1.7, '2025-10-15', 'Klausur'),
-        (4, 3, 1.3, '2025-10-18', 'Hausaufgabe'),
-        (4, 4, 2.0, '2025-10-22', 'Klausur'),
-        # Paul Fischer
-        (5, 1, 2.7, '2025-10-15', 'Klausur'),
-        (5, 5, 2.0, '2025-10-25', 'Klausur'),
-        # Sarah Becker
-        (6, 2, 1.0, '2025-10-20', 'Klausur'),
-        (6, 5, 1.3, '2025-10-25', 'Klausur'),
-        # Leon Schulz
-        (7, 1, 2.0, '2025-10-15', 'Klausur'),
-        (7, 2, 1.7, '2025-10-20', 'Klausur'),
-        # Emma Wagner
-        (8, 3, 1.7, '2025-10-18', 'Hausaufgabe'),
-        (8, 4, 2.3, '2025-10-22', 'Klausur'),
-        # Jonas Hoffmann
-        (9, 2, 2.0, '2025-10-20', 'Klausur'),
-        (9, 5, 2.7, '2025-10-25', 'Klausur'),
-        # Mia Koch
-        (10, 2, 1.3, '2025-10-20', 'Klausur'),
-        (10, 5, 1.0, '2025-10-25', 'Klausur')
-    ]
+    print("Generiere Noten (dies kann einen Moment dauern)...")
+    
+    # Noten generieren
+    # Hole alle Schüler und Kurse
+    cursor.execute("SELECT id, klasse FROM schueler")
+    schueler = cursor.fetchall()
+    
+    cursor.execute("SELECT id, fach, klasse FROM kurse")
+    kurse = cursor.fetchall()
+    
+    noten_data = []
+    
+    # Für jeden Schüler
+    for schueler_id, schueler_klasse in schueler:
+        # Finde alle Kurse für diese Klasse
+        klassen_kurse = [k for k in kurse if k[2] == schueler_klasse]
+        
+        for kurs_id, fach, _ in klassen_kurse:
+            # 2 Schulaufgaben
+            for i in range(2):
+                note = generiere_note()
+                datum = generiere_datum(10 + i * 40, 50 + i * 40)
+                noten_data.append((schueler_id, kurs_id, note, datum, 'Schulaufgabe'))
+            
+            # 3 mündliche Noten
+            for i in range(3):
+                note = generiere_note()
+                datum = generiere_datum(5 + i * 30, 25 + i * 30)
+                noten_data.append((schueler_id, kurs_id, note, datum, 'mündlich'))
+    
     cursor.executemany(
         "INSERT INTO noten (schueler_id, kurs_id, note, datum, art) VALUES (?, ?, ?, ?, ?)",
         noten_data
@@ -164,11 +251,15 @@ def create_database():
     conn.commit()
     conn.close()
     
-    print(f"✓ Datenbank erfolgreich erstellt: {DB_PATH}")
+    print(f"\n✓ Datenbank erfolgreich erstellt: {DB_PATH}")
     print(f"✓ {len(schueler_data)} Schüler hinzugefügt")
     print(f"✓ {len(lehrer_data)} Lehrer hinzugefügt")
-    print(f"✓ {len(kurse_data)} Kurse hinzugefügt")
+    print(f"✓ {len(kurs_data)} Kurse hinzugefügt")
     print(f"✓ {len(noten_data)} Noten hinzugefügt")
+    print(f"\nStatistik:")
+    print(f"  - Klassen: {len(KLASSEN)}")
+    print(f"  - Fächer: {len(FAECHER)}")
+    print(f"  - Durchschnittliche Noten pro Schüler: {len(noten_data) // len(schueler_data)}")
 
 if __name__ == "__main__":
     create_database()
